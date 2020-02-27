@@ -1,0 +1,14 @@
+diff -ruN a/lib/cobalt/arch/arm/include/asm/xenomai/features.h b/lib/cobalt/arch/arm/include/asm/xenomai/features.h
+--- a/lib/cobalt/arch/arm/include/asm/xenomai/features.h	2018-10-02 17:39:36.000000000 +0200
++++ b/lib/cobalt/arch/arm/include/asm/xenomai/features.h	2020-02-25 12:28:10.225480377 +0100
+@@ -48,6 +48,10 @@
+ #define __LINUX_ARM_ARCH__ 7
+ #endif /* armv7 */
+ 
++#if defined(__ARM_ARCH_8A__)
++#define __LINUX_ARM_ARCH__ 8
++#endif /* armv8 */
++
+ #ifndef __LINUX_ARM_ARCH__
+ #error "Could not find current ARM architecture"
+ #endif

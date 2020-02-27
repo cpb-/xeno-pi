@@ -1,0 +1,46 @@
+diff --git a/drivers/irqchip/irq-bcm2835.c b/drivers/irqchip/irq-bcm2835.c
+index 72abca2bac3a..2c8c8ad710e3 100644
+--- a/drivers/irqchip/irq-bcm2835.c
++++ b/drivers/irqchip/irq-bcm2835.c
+@@ -173,10 +173,7 @@ static void armctrl_ack_irq(struct irq_data *d)
+ static struct irq_chip armctrl_chip = {
+ 	.name = "ARMCTRL-level",
+ 	.irq_mask = armctrl_mask_irq,
+-	.irq_unmask = armctrl_unmask_irq,
+-#ifdef CONFIG_ARM64
+-	.irq_ack    = armctrl_ack_irq
+-#endif
++	.irq_unmask = armctrl_unmask_irq
+ };
+ 
+ static int armctrl_xlate(struct irq_domain *d, struct device_node *ctrlr,
+diff --git a/drivers/irqchip/irq-bcm2836.c b/drivers/irqchip/irq-bcm2836.c
+index 5169f63f9eee..edee210fbf5a 100644
+--- a/drivers/irqchip/irq-bcm2836.c
++++ b/drivers/irqchip/irq-bcm2836.c
+@@ -168,7 +168,6 @@ __exception_irq_entry bcm2836_arm_irqchip_handle_irq(struct pt_regs *regs)
+ 		u32 ipi = ffs(mbox_val) - 1;
+ 
+ 		writel(1 << ipi, mailbox0);
+-		dsb(sy);
+ 		handle_IPI(ipi, regs);
+ #endif
+ 	} else if (stat) {
+diff --git a/lib/dump_stack.c b/lib/dump_stack.c
+index 33ffbf308853..5cff72f18c4a 100644
+--- a/lib/dump_stack.c
++++ b/lib/dump_stack.c
+@@ -106,12 +106,7 @@ asmlinkage __visible void dump_stack(void)
+ 		was_locked = 1;
+ 	} else {
+ 		local_irq_restore(flags);
+-		/*
+-		 * Wait for the lock to release before jumping to
+-		 * atomic_cmpxchg() in order to mitigate the thundering herd
+-		 * problem.
+-		 */
+-		do { cpu_relax(); } while (atomic_read(&dump_lock) != -1);
++		cpu_relax();
+ 		goto retry;
+ 	}
+ 

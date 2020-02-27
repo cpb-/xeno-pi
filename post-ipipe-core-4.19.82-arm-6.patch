@@ -1,0 +1,39 @@
+diff --git a/drivers/irqchip/irq-bcm2835.c b/drivers/irqchip/irq-bcm2835.c
+index d49596f23618..d0e450a4626c 100644
+--- a/drivers/irqchip/irq-bcm2835.c
++++ b/drivers/irqchip/irq-bcm2835.c
+@@ -174,6 +174,9 @@ static struct irq_chip armctrl_chip = {
+ 	.name = "ARMCTRL-level",
+ 	.irq_mask = armctrl_mask_irq,
+ 	.irq_unmask = armctrl_unmask_irq,
++#ifdef CONFIG_ARM64
++       .irq_ack    = armctrl_ack_irq,
++#endif
+ #ifdef CONFIG_IPIPE
+ 	.irq_hold = armctrl_mask_irq,
+ 	.irq_release = armctrl_unmask_irq,
+diff --git a/drivers/irqchip/irq-bcm2836.c b/drivers/irqchip/irq-bcm2836.c
+index a5ae07b6af3f..9d1e8da44c09 100644
+--- a/drivers/irqchip/irq-bcm2836.c
++++ b/drivers/irqchip/irq-bcm2836.c
+@@ -201,6 +201,7 @@ __exception_irq_entry bcm2836_arm_irqchip_handle_irq(struct pt_regs *regs)
+ 		u32 ipi = ffs(mbox_val) - 1;
+ 
+ 		writel(1 << ipi, mailbox0);
++		dsb(sy);
+ 		ipipe_handle_multi_ipi(ipi, regs);
+ #endif
+ 	} else if (stat) {
+diff --git a/lib/dump_stack.c b/lib/dump_stack.c
+index 1b734cb90f79..db1766841395 100644
+--- a/lib/dump_stack.c
++++ b/lib/dump_stack.c
+@@ -133,7 +133,7 @@ asmlinkage __visible void dump_stack(void)
+ 		was_locked = 1;
+ 	} else {
+ 		restore_local_irqs(flags);
+-		cpu_relax();
++		do { cpu_relax(); } while (atomic_read(&dump_lock) != -1);
+ 		goto retry;
+ 	}
+ 
